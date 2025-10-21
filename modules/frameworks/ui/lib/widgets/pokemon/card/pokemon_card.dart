@@ -130,7 +130,7 @@ class _PokemonCardState extends ConsumerState<PokemonCard> {
                 ),
               ),
               Expanded(
-                flex: 4,
+                flex: 3,
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [

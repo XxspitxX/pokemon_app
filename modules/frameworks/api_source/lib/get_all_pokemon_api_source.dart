@@ -12,7 +12,13 @@ class GetAllPokemonApiSourceAdapter implements GetAllPokemonApiSource {
 
   @override
   Future<PokemonListResponse?> get([Map? args]) {
-    return _apiSource.getApi(ApiPaths.getAllPokemon, (response) {
+    final providedUrl = args != null ? args['url'] : null;
+
+    final uri = providedUrl != null
+        ? Uri.parse(providedUrl)
+        : Uri.parse(ApiPaths.getAllPokemon);
+
+    return _apiSource.getApi(uri.toString(), (response) {
       return PokemonListResponse.fromJson(response);
     });
   }

@@ -62,9 +62,9 @@ abstract class Values {
   static const double iconSizeMediumLarge = 32.0;
   static const double iconSizeLarge = 36.0;
 
-  static const double iconPokemonSize = 70.0;
-  static const double iconPokemonTypeHeight = 120.0;
-  static const double iconPokemonTypeWidth = 150.0;
+  static const double iconPokemonSize = 65.0;
+  static const double iconPokemonTypeHeight = 100.0;
+  static const double iconPokemonTypeWidth = 120.0;
   static const double iconPokemonHeader = 200.0;
 
   // Duration
