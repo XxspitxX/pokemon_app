@@ -1,0 +1,57 @@
+name: pokemon_app
+description: "A new Flutter project."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.3 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  models:
+    path: modules/models
+  domain:
+    path: modules/domain
+  data:
+    path: modules/data
+  ui:
+    path: modules/frameworks/ui
+  api_source:
+    path: modules/frameworks/api_source
+  db_source:
+    path: modules/frameworks/db_source
+
+  injectable: ^2.3.2
+  get_it: ^8.2.0
+  dio: ^5.4.3
+  go_router: ^16.2.5
+  cupertino_icons: ^1.0.6
+  flutter_hooks:
+  flutter_riverpod: ^3.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  injectable_generator: ^2.4.0
+  build_runner: ^2.4.6
+  custom_lint:
+  flutter_launcher_icons: ^0.14.4
+  flutter_lints: ^6.0.0
+  mockito: ^5.4.2
+
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.jpg"
+  adaptive_icon_background: "#ffffff"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/splash/
+    - assets/icons/
+    - assets/images/pokemons/
