@@ -32,6 +32,6 @@ Para garantizar la seguridad en la manipulación de datos, el proyecto utiliza u
 
 ## IA
 
-El uso de la IA ha sido de gran ayuda para reducir tiempo en escribir el codigo de los modelos tambien se ha utilizado para la consulta de errores para la creacion de modelos, lograr entender el API , para indicarme que parametros debia usar.
+El uso de la IA ha sido de gran ayuda para reducir el tiempo en la escritura del código de los modelos. También se ha utilizado para la consulta y corrección de errores, la creación de modelos, la comprensión del funcionamiento del API y la identificación de los parámetros adecuados que debían emplearse. Adicionalmente, la IA se usó para realizar algunos cálculos complementarios que apoyaron el desarrollo del proyecto.
 
 ![title](./documentacion/doc.jpg)
