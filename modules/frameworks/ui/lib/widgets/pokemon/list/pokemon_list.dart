@@ -23,10 +23,10 @@ class __PokemonListState extends ConsumerState<_PokemonList> {
           title: loc.something_went_wrong,
           description: loc.load_error_message,
           buttonText: loc.retry,
-          onButtonPressed: () async => await ref.read(pokemonListProvider.notifier).getList(),
+          onButtonPressed: () async =>
+              await ref.read(pokemonListProvider.notifier).getList(),
         ),
         data: (s) {
-
           if (s.isInitializing) {
             return const PokemonListSkeleton();
           }

@@ -3,9 +3,9 @@ import 'package:domain/get_pokemon_info_use_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
+import 'package:models/pokemon/info/pokemon_info.dart';
 import 'package:models/pokemon/pokemon_list_response.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:models/pokemon/info/pokemon_info.dart';
 import 'package:ui/util/constants/ui_constants.dart';
 
 part 'pokemon_provider.g.dart';
@@ -22,18 +22,66 @@ GetPokemonInfoUseCase getPokemonInfoUseCase(Ref ref) {
 
 @riverpod
 class PokemonList extends _$PokemonList {
+  bool _isLoadingPage = false;
+
   @override
   FutureOr<PokemonListResponse?> build() async {
-    return const PokemonListResponse(results: []);
+    return const PokemonListResponse(
+      count: 0,
+      next: null,
+      previous: null,
+      results: [],
+    );
   }
 
-  Future<void> getList() async {
-    final useCase = ref.read(getAllPokemonUseCaseProvider);
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      return await useCase.get();
-    });
+  Future<void> fetchFirstPage() async {
+    if (_isLoadingPage) return;
+    _isLoadingPage = true;
+    try {
+      state = const AsyncLoading();
+      final useCase = ref.read(getAllPokemonUseCaseProvider);
+      final first = await useCase.get();
+      state = AsyncData(first);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    } finally {
+      _isLoadingPage = false;
+    }
   }
+
+  Future<bool> fetchNextPage() async {
+    if (_isLoadingPage) return false;
+
+    final current = state.value;
+    final nextUrl = current?.next;
+    if (nextUrl == null) return false;
+
+    _isLoadingPage = true;
+    try {
+      final useCase = ref.read(getAllPokemonUseCaseProvider);
+      final nextPage = await useCase.get({UIConstants.url: nextUrl});
+
+      final merged = PokemonListResponse(
+        count: nextPage?.results?.length ?? current?.count ?? 0,
+        next: nextPage?.next ?? '',
+        previous: nextPage?.previous,
+        results: [
+          ...?current?.results,
+          ...?nextPage?.results,
+        ],
+      );
+
+      state = AsyncData(merged);
+      return true;
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      return false;
+    } finally {
+      _isLoadingPage = false;
+    }
+  }
+
+  Future<void> getList() => fetchFirstPage();
 }
 
 @riverpod
@@ -55,12 +103,10 @@ class PokemonInfo extends _$PokemonInfo {
 
 @riverpod
 class PokemonDetailsPager extends _$PokemonDetailsPager {
-  static const int _batchSize = 5;
   bool _started = false;
 
   @override
   Future<PokemonDetailsPageState> build() async {
-    
     ref.listen<AsyncValue<PokemonListResponse?>>(
       pokemonListProvider,
       (prev, next) {
@@ -85,14 +131,14 @@ class PokemonDetailsPager extends _$PokemonDetailsPager {
 
     try {
       final list = await ref.read(pokemonListProvider.future);
-      
+
       if (list?.results?.isNotEmpty ?? false) {
         if (!_started) {
           _started = true;
           Future.microtask(fetchNextBatch);
         }
       }
-      
+
       return const PokemonDetailsPageState();
     } catch (e, st) {
       Error.throwWithStackTrace(e, st);
@@ -111,38 +157,45 @@ class PokemonDetailsPager extends _$PokemonDetailsPager {
     state = AsyncData(current.copyWith(isLoading: true));
 
     try {
-      final list = await ref.read(pokemonListProvider.future);
-      final results = list?.results ?? const [];
+      var list = await ref.read(pokemonListProvider.future);
+      var results = list?.results ?? const [];
 
       if (current.nextIndex >= results.length) {
-        state = AsyncData(current.copyWith(
-          isLoading: false,
-          hasMore: false,
-          isInitializing: false,
-        ));
-        return;
+        final loaded =
+            await ref.read(pokemonListProvider.notifier).fetchNextPage();
+        if (!loaded) {
+          state = AsyncData(current.copyWith(
+            isLoading: false,
+            hasMore: false,
+            isInitializing: false,
+          ));
+          return;
+        }
+
+        list = await ref.read(pokemonListProvider.future);
+        results = list?.results ?? const [];
       }
 
       final start = current.nextIndex;
-      final end = (start + _batchSize).clamp(0, results.length);
+      final end = (start + 5).clamp(0, results.length);
 
       final urls = results.sublist(start, end).map((e) => e.url).toList();
       final useCase = ref.read(getPokemonInfoUseCaseProvider);
-
-      final futures = urls.map((u) => useCase.get({UIConstants.url: u}));
-      final details = (await Future.wait(futures)).whereType<Pokemon>().toList();
-
-      state = AsyncData(
-        current.copyWith(
-          items: [...current.items, ...details],
-          nextIndex: end,
-          isLoading: false,
-          hasMore: end < results.length,
-          isInitializing: false,
-        ),
+      final details = await Future.wait(
+        urls.map((u) => useCase.get({UIConstants.url: u})),
       );
-      
-      debugPrint('Loaded ${details.length} pokemon. Total: ${state.value?.items.length}');
+
+      final newNextIndex = end;
+      final stillHasMore =
+          newNextIndex < results.length || (list?.next != null);
+
+      state = AsyncData(current.copyWith(
+        items: [...current.items, ...details.whereType<Pokemon>()],
+        nextIndex: newNextIndex,
+        isLoading: false,
+        hasMore: stillHasMore,
+        isInitializing: false,
+      ));
     } catch (e, st) {
       debugPrint('Error in fetchNextBatch: $e');
       state = AsyncError(e, st);
@@ -154,7 +207,9 @@ class PokemonDetailsPager extends _$PokemonDetailsPager {
     if (s == null) return;
 
     const threshold = 2;
-    if (!s.isLoading && s.hasMore && visibleIndex >= s.items.length - threshold) {
+    if (!s.isLoading &&
+        s.hasMore &&
+        visibleIndex >= s.items.length - threshold) {
       Future.microtask(fetchNextBatch);
     }
   }
