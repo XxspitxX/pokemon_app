@@ -22,13 +22,15 @@ jobs:
         with:
           channel: "stable"
 
-      - run: flutter pub get
+      - name: Clean project
+        run: ./scripts/clean.sh
 
-      # 🔧 NEW: generate all *.g.dart / *.freezed.dart files
-      - name: Run build_runner
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+      - name: Pub get
+        run: ./scripts/package_get.sh
 
-      - run: flutter --version
+      - name: Pub Build All
+        run: ./scripts/dart_build_runner_all_modules.sh
+
       - run: flutter analyze
       - run: flutter test
 
@@ -48,12 +50,14 @@ jobs:
         with:
           channel: "stable"
 
-      - run: flutter pub get
-      - run: flutter clean
+      - name: Clean project
+        run: ./scripts/clean.sh
 
-      # 🔧 NEW: generate code here too, before building
-      - name: Run build_runner
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+      - name: Pub get
+        run: ./scripts/package_get.sh
+
+      - name: Pub Build All
+        run: ./scripts/dart_build_runner_all_modules.sh
 
       - run: flutter build apk --release
 
