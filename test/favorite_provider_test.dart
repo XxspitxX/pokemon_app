@@ -2,18 +2,9 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockito/mockito.dart';
-import 'package:domain/favorite_pokemon_use_case.dart';
 import 'package:models/pokemon/info/pokemon_info.dart';
 import 'package:ui/providers/pokemon/favorite_provider.dart';
 import 'mock_providers.mocks.dart';
-
-ProviderContainer _makeContainer({
-  required FavoritePokemonUseCase favoriteUC,
-}) {
-  return ProviderContainer(overrides: [
-    favoritePokemonUseCaseProvider.overrideWithValue(favoriteUC),
-  ]);
-}
 
 Pokemon fakePokemon(int id, {String? name, String? dbId, bool? favorite}) {
   return Pokemon(
