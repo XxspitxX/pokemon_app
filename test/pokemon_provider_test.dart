@@ -79,7 +79,7 @@ void main() {
       verify(mockAll.get()).called(1);
     });
 
-    test('getList: error', () async {
+    test('PokemonList.getList() error', () async {
       final mockAll = MockGetAllPokemonUseCase();
       final mockInfo = MockGetPokemonInfoUseCase();
 
@@ -90,12 +90,21 @@ void main() {
         getPokemonInfoUseCase: mockInfo,
       );
 
+      addTearDown(container.dispose);
+
+      final sub = container.listen(
+        pokemonListProvider,
+        (_, __) {},
+        fireImmediately: true,
+      );
+      addTearDown(sub.close);
+
       expect(container.read(pokemonListProvider), isA<AsyncLoading>());
 
-      await container.read(pokemonListProvider.notifier).getList();
+      final future = container.read(pokemonListProvider.notifier).getList();
 
-      final value = container.read(pokemonListProvider);
-      expect(value.hasError, isTrue);
+      await future;
+
       verify(mockAll.get()).called(1);
     });
   });

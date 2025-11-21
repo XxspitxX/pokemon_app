@@ -65,16 +65,26 @@ void main() {
       final container = ProviderContainer(overrides: [
         favoritePokemonUseCaseProvider.overrideWithValue(mockUC),
       ]);
+
       addTearDown(() async {
         await controller.close();
         container.dispose();
       });
 
+      // 🔹 Mantener vivo el provider autoDispose
+      final sub = container.listen(
+        favoritePokemonListProvider,
+        (_, __) {},
+        fireImmediately: true,
+      );
+      addTearDown(sub.close);
+
       final future =
           container.read(favoritePokemonListProvider.notifier).getList();
-      scheduleMicrotask(() {
-        controller.addError(Exception('fallo stream'));
-      });
+
+      controller.addError(Exception('fallo stream'));
+      await controller.close();
+
       await future;
 
       final state = container.read(favoritePokemonListProvider);
