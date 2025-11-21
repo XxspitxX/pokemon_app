@@ -105,6 +105,9 @@ void main() {
 
       await future;
 
+      final value = container.read(pokemonListProvider);
+      expect(value.hasError, isTrue);
+      expect(value.error, isA<Exception>());
       verify(mockAll.get()).called(1);
     });
   });

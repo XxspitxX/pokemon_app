@@ -71,7 +71,6 @@ void main() {
         container.dispose();
       });
 
-      // 🔹 Mantener vivo el provider autoDispose
       final sub = container.listen(
         favoritePokemonListProvider,
         (_, __) {},
