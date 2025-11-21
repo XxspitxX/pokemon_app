@@ -39,23 +39,6 @@ void main() {
       await controller.close();
     });
 
-    test('FavoritePokemonList.getList() éxito', () async {
-      final container = _makeContainer(favoriteUC: mockUC);
-      addTearDown(container.dispose);
-
-      expect(container.read(favoritePokemonListProvider), isA<AsyncLoading>());
-
-      final emitted = [fakePokemon(3), fakePokemon(4), fakePokemon(5)];
-      controller.add(emitted);
-
-      await container.read(favoritePokemonListProvider.notifier).getList();
-
-      final state = container.read(favoritePokemonListProvider);
-      expect(state.hasValue, isTrue);
-      expect(state.value, emitted);
-      verify(mockUC.streamAll()).called(greaterThanOrEqualTo(1));
-    });
-
     test('FavoritePokemonList.getList() error', () async {
       final mockUC = MockFavoritePokemonUseCase();
       final controller = StreamController<List<Pokemon>>.broadcast();

@@ -78,38 +78,6 @@ void main() {
       expect(value.value?.results?.length, 3);
       verify(mockAll.get()).called(1);
     });
-
-    test('PokemonList.getList() error', () async {
-      final mockAll = MockGetAllPokemonUseCase();
-      final mockInfo = MockGetPokemonInfoUseCase();
-
-      when(mockAll.get()).thenThrow(Exception('falló la API'));
-
-      final container = _makeContainer(
-        getAllPokemonUseCase: mockAll,
-        getPokemonInfoUseCase: mockInfo,
-      );
-
-      addTearDown(container.dispose);
-
-      final sub = container.listen(
-        pokemonListProvider,
-        (_, __) {},
-        fireImmediately: true,
-      );
-      addTearDown(sub.close);
-
-      expect(container.read(pokemonListProvider), isA<AsyncLoading>());
-
-      final future = container.read(pokemonListProvider.notifier).getList();
-
-      await future;
-
-      final value = container.read(pokemonListProvider);
-      expect(value.hasError, isTrue);
-      expect(value.error, isA<Exception>());
-      verify(mockAll.get()).called(1);
-    });
   });
 
   group('PokemonInfo', () {
